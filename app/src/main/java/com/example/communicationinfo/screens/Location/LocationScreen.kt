@@ -100,7 +100,7 @@ fun LocationScreen(navController: NavController){
                         Button(onClick = {
                             val permission = arrayOf(
                                 android.Manifest.permission.ACCESS_COARSE_LOCATION,
-                                android.Manifest.permission.ACCESS_COARSE_LOCATION
+                                android.Manifest.permission.ACCESS_FINE_LOCATION
                             )
                             permissionLauncher.launch(permission)
                         }) {
@@ -125,18 +125,27 @@ fun LocationScreen(navController: NavController){
                                 verticalArrangement = Arrangement.Center,
                                 horizontalAlignment = Alignment.Start
                             ) {
-                                Text(modifier = Modifier.padding(start = 10.dp), text = "Your location is:",
-                                    fontWeight = FontWeight.Bold,fontSize = 25.sp)
-                                Spacer(modifier = Modifier.size(10.dp))
-                                Text("Latitude: ${currentLocation?.latitude}",fontSize = 18.sp,
-                                    modifier = Modifier.padding(start = 10.dp))
-                                Spacer(modifier = Modifier.size(10.dp))
-                                Text("Longitude: ${currentLocation?.longitude}",fontSize = 18.sp,
-                                    modifier = Modifier.padding(start = 10.dp))
+                                if(currentLocation == null){
+                                    Text("Processing...",fontWeight = FontWeight.Bold,fontSize = 25.sp,
+                                        modifier = Modifier.padding(start = 10.dp))
+                                }else{
+                                    Text(modifier = Modifier.padding(start = 10.dp), text = "Your location is:",
+                                        fontWeight = FontWeight.Bold,fontSize = 25.sp)
+                                    Spacer(modifier = Modifier.size(10.dp))
+                                    Text("Latitude: ${currentLocation?.latitude}",fontSize = 18.sp,
+                                        modifier = Modifier.padding(start = 10.dp))
+                                    Spacer(modifier = Modifier.size(10.dp))
+                                    Text("Longitude: ${currentLocation?.longitude}",fontSize = 18.sp,
+                                        modifier = Modifier.padding(start = 10.dp))
+                                }
                             }
                         }
                         Spacer(modifier = Modifier.size(180.dp))
-                        Button(onClick = {}, modifier = Modifier.size(220.dp, 80.dp),
+                        Button(onClick = {
+                            currentLocation?.let {
+                                it -> ShowOnGoogleMap(it)
+                            }
+                        }, modifier = Modifier.size(220.dp, 80.dp),
 
                             ) {
                             Text("Show on Google Map", fontSize = 18.sp)

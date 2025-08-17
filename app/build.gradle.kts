@@ -63,5 +63,8 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:$nav_version")
 
     //google play service
-    implementation("com.google.android.gms:play-services-location:+")
+    implementation("com.google.android.gms:play-services-location:21.3.0")
+
+    //googleMap
+    implementation("com.google.maps.android:maps-compose:6.7.1")
 }
