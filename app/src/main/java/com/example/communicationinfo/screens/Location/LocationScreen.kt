@@ -48,6 +48,8 @@ fun LocationScreen(navController: NavController){
 
     val context = LocalContext.current
 
+    var showMap by remember { mutableStateOf(false) }
+
     var isFineGranted by remember {
         mutableStateOf(false)
     }
@@ -62,7 +64,7 @@ fun LocationScreen(navController: NavController){
         isCoarseGranted = permissionsMap[android.Manifest.permission.ACCESS_COARSE_LOCATION] ?: false
 
         if(permissionsMap.containsValue(false)){
-                Toast.makeText(context, "Permission Denied", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Permission Denied", Toast.LENGTH_SHORT).show()
 
         }else{
             Toast.makeText(context, "Permission Granted", Toast.LENGTH_SHORT).show()
@@ -92,66 +94,69 @@ fun LocationScreen(navController: NavController){
             Column(modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally) {
-                    if(!isCoarseGranted && !isFineGranted){
-                        Text("Permission Denied", style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 30.sp)
-                        Spacer(modifier = Modifier.size(40.dp))
-                        Button(onClick = {
-                            val permission = arrayOf(
-                                android.Manifest.permission.ACCESS_COARSE_LOCATION,
-                                android.Manifest.permission.ACCESS_FINE_LOCATION
-                            )
-                            permissionLauncher.launch(permission)
-                        }) {
-                            Text(
-                                text = "Grant Permissions",
-                                style = MaterialTheme.typography.labelMedium,
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-
-                    }else{
-                        var currentLocation by remember { mutableStateOf<LatLng?>(null) }
-                        currentLocation = GetLocation()
-                        Surface(modifier = Modifier.size(310.dp, 150.dp),
-                            shape = RectangleShape,
-                            color = Color(0xFF5936B2)
-                        ) {
-
-                            Column(
-                                modifier = Modifier.fillMaxSize(),
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.Start
-                            ) {
-                                if(currentLocation == null){
-                                    Text("Processing...",fontWeight = FontWeight.Bold,fontSize = 25.sp,
-                                        modifier = Modifier.padding(start = 10.dp))
-                                }else{
-                                    Text(modifier = Modifier.padding(start = 10.dp), text = "Your location is:",
-                                        fontWeight = FontWeight.Bold,fontSize = 25.sp)
-                                    Spacer(modifier = Modifier.size(10.dp))
-                                    Text("Latitude: ${currentLocation?.latitude}",fontSize = 18.sp,
-                                        modifier = Modifier.padding(start = 10.dp))
-                                    Spacer(modifier = Modifier.size(10.dp))
-                                    Text("Longitude: ${currentLocation?.longitude}",fontSize = 18.sp,
-                                        modifier = Modifier.padding(start = 10.dp))
-                                }
-                            }
-                        }
-                        Spacer(modifier = Modifier.size(180.dp))
-                        Button(onClick = {
-                            currentLocation?.let {
-                                it -> ShowOnGoogleMap(it)
-                            }
-                        }, modifier = Modifier.size(220.dp, 80.dp),
-
-                            ) {
-                            Text("Show on Google Map", fontSize = 18.sp)
-                        }
-
+                if(!isCoarseGranted && !isFineGranted){
+                    Text("Permission Denied", style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 30.sp)
+                    Spacer(modifier = Modifier.size(40.dp))
+                    Button(onClick = {
+                        val permission = arrayOf(
+                            android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                            android.Manifest.permission.ACCESS_FINE_LOCATION
+                        )
+                        permissionLauncher.launch(permission)
+                    }) {
+                        Text(
+                            text = "Grant Permissions",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
+
+                }else{
+                    var currentLocation by remember { mutableStateOf<LatLng?>(null) }
+                    currentLocation = GetLocation()
+                    Surface(modifier = Modifier.size(310.dp, 150.dp),
+                        shape = RectangleShape,
+                        color = Color(0xFF5936B2)
+                    ) {
+
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.Start
+                        ) {
+                            if(currentLocation == null){
+                                Text("Processing...",fontWeight = FontWeight.Bold,fontSize = 25.sp,
+                                    modifier = Modifier.padding(start = 10.dp))
+                            }else{
+                                Text(modifier = Modifier.padding(start = 10.dp), text = "Your location is:",
+                                    fontWeight = FontWeight.Bold,fontSize = 25.sp)
+                                Spacer(modifier = Modifier.size(10.dp))
+                                Text("Latitude: ${currentLocation?.latitude}",fontSize = 18.sp,
+                                    modifier = Modifier.padding(start = 10.dp))
+                                Spacer(modifier = Modifier.size(10.dp))
+                                Text("Longitude: ${currentLocation?.longitude}",fontSize = 18.sp,
+                                    modifier = Modifier.padding(start = 10.dp))
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.size(180.dp))
+                    Button(onClick = {
+                        showMap = true
+
+                    }, modifier = Modifier.size(220.dp, 80.dp),
+
+                        ) {
+                        Text("Show on Google Map", fontSize = 18.sp)
+                    }
+                    if(showMap) {
+                        currentLocation?.let {
+                            ShowOnGoogleMap(it)
+                        }
+                    }
+                }
             }
         }
     }

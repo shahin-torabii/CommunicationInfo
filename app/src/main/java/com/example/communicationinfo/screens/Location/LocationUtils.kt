@@ -19,3 +19,5 @@ fun checkCoarsePermission(context: Context): Boolean{
         context, android.Manifest.permission.ACCESS_COARSE_LOCATION
     ) == PackageManager.PERMISSION_GRANTED)
 }
+
+
