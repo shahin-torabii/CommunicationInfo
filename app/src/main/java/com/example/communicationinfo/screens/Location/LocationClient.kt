@@ -54,7 +54,6 @@ fun GetLocation(): LatLng? {
             locationCallback,
             Looper.getMainLooper())
 
-
     return currentLocation
 }
 
