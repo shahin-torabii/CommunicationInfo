@@ -7,11 +7,14 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresPermission
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -26,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -111,7 +115,32 @@ fun LocationScreen(navController: NavController){
                     }else{
                         var currentLocation by remember { mutableStateOf<LatLng?>(null) }
                         currentLocation = GetLocation()
-                        Text("${currentLocation?.latitude},${currentLocation?.longitude}")
+                        Surface(modifier = Modifier.size(310.dp, 150.dp),
+                            shape = RectangleShape,
+                            color = Color(0xFF5936B2)
+                        ) {
+
+                            Column(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalArrangement = Arrangement.Center,
+                                horizontalAlignment = Alignment.Start
+                            ) {
+                                Text(modifier = Modifier.padding(start = 10.dp), text = "Your location is:",
+                                    fontWeight = FontWeight.Bold,fontSize = 25.sp)
+                                Spacer(modifier = Modifier.size(10.dp))
+                                Text("Latitude: ${currentLocation?.latitude}",fontSize = 18.sp,
+                                    modifier = Modifier.padding(start = 10.dp))
+                                Spacer(modifier = Modifier.size(10.dp))
+                                Text("Longitude: ${currentLocation?.longitude}",fontSize = 18.sp,
+                                    modifier = Modifier.padding(start = 10.dp))
+                            }
+                        }
+                        Spacer(modifier = Modifier.size(180.dp))
+                        Button(onClick = {}, modifier = Modifier.size(220.dp, 80.dp),
+
+                            ) {
+                            Text("Show on Google Map", fontSize = 18.sp)
+                        }
 
                     }
             }
@@ -120,8 +149,17 @@ fun LocationScreen(navController: NavController){
 }
 
 
+
+
 @Preview
 @Composable
 fun LocationPreview(){
+    Surface (modifier = Modifier.padding(3.dp),
+        color = Color(0xFFD5C593)){
 
+        Column(modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally) {
+        }
+    }
 }
