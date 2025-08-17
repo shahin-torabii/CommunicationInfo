@@ -58,7 +58,6 @@ fun GetLocation(): LatLng? {
 }
 
 
-
 @Composable
 fun ShowOnGoogleMap(loc: LatLng) {
     val cameraPositionState = rememberCameraPositionState {

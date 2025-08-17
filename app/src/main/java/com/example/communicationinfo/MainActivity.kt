@@ -28,6 +28,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+
 @Composable
 fun ShowInfoApp(modifier: Modifier = Modifier){
     InfoNavigation()
