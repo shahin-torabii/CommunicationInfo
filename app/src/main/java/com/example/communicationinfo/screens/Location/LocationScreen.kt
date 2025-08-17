@@ -151,6 +151,7 @@ fun LocationScreen(navController: NavController){
                         ) {
                         Text("Show on Google Map", fontSize = 18.sp)
                     }
+
                     if(showMap) {
                         currentLocation?.let {
                             ShowOnGoogleMap(it)
