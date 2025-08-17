@@ -1,9 +1,11 @@
 package com.example.communicationinfo.screens.Location
 
+import android.Manifest
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresPermission
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -32,7 +34,11 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import com.example.communicationinfo.widgets.InFoAppBar
+import com.google.android.gms.maps.model.LatLng
 
+
+
+@RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
 @Composable
 fun LocationScreen(navController: NavController){
 
@@ -53,8 +59,9 @@ fun LocationScreen(navController: NavController){
 
         if(permissionsMap.containsValue(false)){
                 Toast.makeText(context, "Permission Denied", Toast.LENGTH_SHORT).show()
+
         }else{
-            Log.d("hi", "this is it")
+            Toast.makeText(context, "Permission Granted", Toast.LENGTH_SHORT).show()
         }
 
     }
@@ -100,7 +107,11 @@ fun LocationScreen(navController: NavController){
                                 fontWeight = FontWeight.Bold
                             )
                         }
+
                     }else{
+                        var currentLocation by remember { mutableStateOf<LatLng?>(null) }
+                        currentLocation = GetLocation()
+                        Text("${currentLocation?.latitude},${currentLocation?.longitude}")
 
                     }
             }
