@@ -95,11 +95,17 @@ fun WifiScreen(navController: NavController){
         if(!isCoarseGranted){
             permissions.add(android.Manifest.permission.ACCESS_COARSE_LOCATION)
         }
-        if (!){
-            permissions.add(android.Manifest.permission.ACCESS_FINE_LOCATION)
+        if (!isAccessWifi){
+            permissions.add(android.Manifest.permission.ACCESS_WIFI_STATE)
         }
-        if(!isCoarseGranted){
-            permissions.add(android.Manifest.permission.ACCESS_COARSE_LOCATION)
+        if(!isChangeWifiGranted){
+            permissions.add(android.Manifest.permission.CHANGE_WIFI_STATE)
+        }
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            if(!isNearWifiGranted){
+                permissions.add(android.Manifest.permission.NEARBY_WIFI_DEVICES)
+            }
         }
         permissionLauncher.launch(permissions.toTypedArray())
         Log.d("dd", "${permissions}")
@@ -110,16 +116,18 @@ fun WifiScreen(navController: NavController){
         navController.popBackStack()
     } }) { contentPadding ->
         Surface (modifier = Modifier.padding(contentPadding),
-            color = Color(0xFFD5C593)){
-                wifiList = GetNearByWifi()
-            Column (modifier = Modifier.fillMaxSize()){
-                Text("${wifiList[0]}")
+            color = Color(0xFFD5C593)) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                if(isAccessWifi && isNearWifiGranted &&isChangeWifiGranted
+                    && isFineGranted && isCoarseGranted) {
+                    val result = GetNearByWifi()
+                    Text("${result[0]}")
+                }
             }
-
+        }
     }
 }
 
-fun rememberMultiplePermissionsState(permissions: Any) {}
 
 @Preview
 @Composable
