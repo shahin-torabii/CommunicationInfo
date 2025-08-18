@@ -15,7 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.communicationinfo.navigations.InfoNavigation
 import com.example.communicationinfo.navigations.InfoScreens
 import com.example.communicationinfo.widgets.Button
 

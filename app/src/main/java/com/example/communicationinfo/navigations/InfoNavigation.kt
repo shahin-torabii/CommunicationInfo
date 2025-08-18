@@ -1,13 +1,13 @@
 package com.example.communicationinfo.navigations
 
-import MainScreen
+import com.example.communicationinfo.screens.MainScreen
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.communicationinfo.screens.BaseStationScreen
 import com.example.communicationinfo.screens.Location.LocationScreen
-import com.example.communicationinfo.screens.WifiScreen
+import com.example.communicationinfo.screens.WiFi.WifiScreen
 
 
 @Composable
@@ -22,7 +22,7 @@ fun InfoNavigation(){
             MainScreen(navController = navController)
         }
 
-        composable(InfoScreens.LocationScreen.name){
+        composable(InfoScreens.LocationScreen.name) @androidx.annotation.RequiresPermission(allOf = [android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION]) {
             LocationScreen(navController = navController)
         }
 

@@ -70,4 +70,6 @@ dependencies {
     implementation("com.google.maps.android:maps-compose:5.0.0")
     implementation("com.google.android.gms:play-services-maps:19.2.0")
 
+    implementation("com.google.accompanist:accompanist-permissions:0.30.1")
+
 }
