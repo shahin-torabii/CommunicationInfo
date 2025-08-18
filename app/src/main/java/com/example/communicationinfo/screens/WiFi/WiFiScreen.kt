@@ -5,10 +5,28 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -21,13 +39,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.motionEventSpy
+import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.communicationinfo.widgets.InFoAppBar
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import androidx.compose.material.icons.filled.Wifi
 
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -117,13 +138,118 @@ fun WifiScreen(navController: NavController){
     } }) { contentPadding ->
         Surface (modifier = Modifier.padding(contentPadding),
             color = Color(0xFFD5C593)) {
-            Column(modifier = Modifier.fillMaxSize()) {
                 if(isAccessWifi && isNearWifiGranted &&isChangeWifiGranted
                     && isFineGranted && isCoarseGranted) {
-                    val result = GetNearByWifi()
-                    Text("${result[0]}")
+                    val results = GetNearByWifi()
+                    LazyColumn (){
+                        items(results){result->
+                            WifiRow(result)
+                        }
+
+                    }
+
+                }
+        }
+    }
+}
+
+@Composable
+fun WifiRow(result: ScanResult){
+
+    var expanded by remember {
+        mutableStateOf(false)
+    }
+
+    val level = result.level // dBm
+    val bars = signalLevelToBars(level)
+
+    Surface(
+        modifier = Modifier
+            .padding(2.dp).fillMaxWidth(),
+        color = Color(0xFF8ED5F6),
+        shape = RoundedCornerShape(15.dp)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
+            ) {
+                Text("${result.wifiSsid}", modifier = Modifier.padding(start = 10.dp, top = 20.dp,),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontSize = 15.sp)
+                Spacer(modifier = Modifier.size(width = 160.dp, height = 0.dp))
+
+                Text("Signal: ${result.level} dbm", modifier = Modifier.padding(start = 10.dp, top = 20.dp,),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontSize = 15.sp)
+                SignalIcon(bars)
+                //Icon(imageVector = Icons.Filled.Wifi, contentDescription = "wifi")
+            }
+
+            AnimatedVisibility(visible = expanded) {
+                Column {
+
+                    Text("BSSID: ${result.BSSID}", modifier = Modifier.padding(start = 10.dp, top = 20.dp,),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontSize = 15.sp)
+                    Text("Freq: ${result.frequency}", modifier = Modifier.padding(start = 10.dp, top = 20.dp,),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontSize = 15.sp)
+                    Text("Channel Width: ${result.channelWidth}", modifier = Modifier.padding(start = 10.dp, top = 20.dp,),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontSize = 15.sp)
+                    Text("Capabilities: ${result.capabilities}", modifier = Modifier.padding(start = 10.dp, top = 20.dp,),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontSize = 15.sp)
+//                    Text("Operator: ${result.}", modifier = Modifier.padding(start = 10.dp, top = 20.dp,),
+//                        style = MaterialTheme.typography.bodyMedium,
+//                        fontSize = 15.sp)
+
                 }
             }
+
+            Icon(
+                imageVector = if (!expanded) Icons.Default.KeyboardArrowDown
+                else Icons.Default.KeyboardArrowUp,
+                contentDescription = "arrow up",
+                modifier = Modifier.clickable {
+                    expanded = !expanded
+                }
+            )
+        }
+    }
+
+}
+
+
+fun signalLevelToBars(dbm: Int): Int {
+    return when {
+        dbm >= -50 -> 4
+        dbm >= -60 -> 3
+        dbm >= -70 -> 2
+        dbm >= -80 -> 1
+        else -> 0
+    }
+}
+
+@Composable
+fun SignalIcon(bars: Int) {
+    Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+        for (i in 1..4) {
+            Box(
+                modifier = Modifier
+                    .width(4.dp)
+                    .height((i * 6).dp)
+                    .background(
+                        color = if (i <= bars) Color.Green else Color.LightGray,
+                        shape = RoundedCornerShape(1.dp)
+                    )
+            )
         }
     }
 }
@@ -131,11 +257,18 @@ fun WifiScreen(navController: NavController){
 
 @Preview
 @Composable
-fun prev(){
-    Surface (modifier = Modifier.padding(2.dp),
-        color = Color(0xFFD5C593)){
-        Column(modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally) {
+fun Prev() {
+    val listStr = listOf("hi", "it is me", "shahin")
+    Surface(
+        modifier = Modifier.padding(2.dp),
+        color = Color(0xFFD5C593)
+    ) {
+        LazyColumn {
+            items(listStr) { str ->
+
+                // Each item has its own expanded state
+
+            }
+        }
     }
-}}
+}
