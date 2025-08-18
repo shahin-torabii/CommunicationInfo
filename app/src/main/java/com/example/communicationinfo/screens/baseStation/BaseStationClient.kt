@@ -13,7 +13,7 @@ import java.util.concurrent.Flow
 
 
 @Composable
-fun GetBaseStations(): List< TelephonyManager>{
+fun GetBaseStations(): List< Pair<TelephonyManager, Int>>{
 
     val context = LocalContext.current
 
@@ -22,13 +22,13 @@ fun GetBaseStations(): List< TelephonyManager>{
     val activeSubscriptions :List<SubscriptionInfo> = subscriptionManager.activeSubscriptionInfoList()
 
     val telManagers = remember {
-        mutableListOf< TelephonyManager>()
+        mutableListOf< Pair<TelephonyManager, Int>>()
     }
 
     activeSubscriptions.forEach { subscription ->
         val telephonyManager = context.applicationContext.getSystemService(TelephonyManager::class.java)
             .createForSubscriptionId(subscription.subscriptionId)
-        telManagers.add(telephonyManager)
+        telManagers.add(Pair(telephonyManager, subscription.simSlotIndex))
     }
     return  telManagers
 }

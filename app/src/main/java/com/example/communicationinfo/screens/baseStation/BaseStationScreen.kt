@@ -3,15 +3,24 @@ package com.example.communicationinfo.screens.baseStation
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -31,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.communicationinfo.screens.WiFi.GetNearByWifi
+import com.example.communicationinfo.screens.WiFi.SignalIcon
 import com.example.communicationinfo.screens.WiFi.WifiRow
 import com.example.communicationinfo.widgets.InFoAppBar
 
@@ -105,6 +115,70 @@ fun BaseStationScreen(navController: NavController) {
                     (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU || isReadPhoneNumberGranted)
 
             if (permissionGrants) {
+                val telephonyManager = GetBaseStations()
+                val simOne = telephonyManager[0].first
+                val simOneSlot =  telephonyManager[0].second
+                val simTwoPair = telephonyManager.getOrNull(1)
+                val simTwo = simTwoPair?.first
+                val simTwoSlot = simTwoPair?.second
+                Surface(
+                    modifier = Modifier
+                        .padding(2.dp)
+                        .fillMaxWidth(),
+                    color = Color(0xFF8ED5F6),
+                    shape = RoundedCornerShape(15.dp)
+                ) {
+                    val expanded by remember {
+                        mutableStateOf(false)
+                    }
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Start
+                        ) {
+                               Text(simOne.allCellInfo.toString())
+                                Spacer(modifier = Modifier.size(width = 160.dp, height = 0.dp))
+                                Text(text = "${simOneSlot}")
+                        }
+
+                        AnimatedVisibility(visible = expanded) {
+                            Column {
+
+                                Text(
+                                    "BSSID:",
+                                    modifier = Modifier.padding(start = 10.dp, top = 20.dp),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontSize = 15.sp
+                                )
+
+                                Text(
+                                    "Capabilities:",
+                                    modifier = Modifier.padding(start = 10.dp, top = 20.dp),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontSize = 15.sp
+                                )
+//                    Text("Operator: ${result.}", modifier = Modifier.padding(start = 10.dp, top = 20.dp,),
+//                        style = MaterialTheme.typography.bodyMedium,
+//                        fontSize = 15.sp)
+
+                            }
+                        }
+
+                        Icon(
+                            imageVector = if (!expanded) Icons.Default.KeyboardArrowDown
+                            else Icons.Default.KeyboardArrowUp,
+                            contentDescription = "arrow up",
+                            modifier = Modifier.clickable {
+                                expanded = !expanded
+                            }
+                        )
+                    }
+                }
 
 
             } else {
