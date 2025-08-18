@@ -3,14 +3,24 @@ package com.example.communicationinfo.screens.baseStation
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
+import com.example.communicationinfo.screens.WiFi.GetNearByWifi
+import com.example.communicationinfo.screens.WiFi.WifiRow
+import com.example.communicationinfo.widgets.InFoAppBar
 
 
 @Composable
@@ -23,36 +33,25 @@ fun BaseStationScreen(navController: NavController){
     var isFineGranted by remember {
         mutableStateOf(false)
     }
-    var isAccessWifi by remember {
-        mutableStateOf(false)
-    }
-
-    var isCoarseGranted by remember {
+    var isReadPhoneGranted by remember {
         mutableStateOf(false)
     }
 
 
-    var isChangeWifiGranted by remember {
+    var isReadPhoneNumberGranted by remember {
         mutableStateOf(false)
     }
 
 
-    var isNearWifiGranted by remember {
-        mutableStateOf(false)
-    }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) {permissionsMap->
         isFineGranted = permissionsMap[android.Manifest.permission.ACCESS_FINE_LOCATION] ?: false
-        isCoarseGranted = permissionsMap[android.Manifest.permission.ACCESS_COARSE_LOCATION] ?: false
-        isAccessWifi = permissionsMap[android.Manifest.permission.ACCESS_WIFI_STATE] ?: false
-        isChangeWifiGranted = permissionsMap[android.Manifest.permission.CHANGE_WIFI_STATE] ?: false
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            isNearWifiGranted =
-                permissionsMap[android.Manifest.permission.NEARBY_WIFI_DEVICES] ?: false
+        isReadPhoneGranted = permissionsMap[android.Manifest.permission.READ_PHONE_STATE] ?: false
+        if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU){
+            isReadPhoneNumberGranted = permissionsMap[android.Manifest.permission.READ_PHONE_NUMBERS] ?: false
         }
-
         if(permissionsMap.containsValue(false)){
             Toast.makeText(context, "Permissions Denied", Toast.LENGTH_SHORT).show()
 
@@ -70,23 +69,24 @@ fun BaseStationScreen(navController: NavController){
         if (!isFineGranted){
             permissions.add(android.Manifest.permission.ACCESS_FINE_LOCATION)
         }
-        if(!isCoarseGranted){
-            permissions.add(android.Manifest.permission.ACCESS_COARSE_LOCATION)
-        }
-        if (!isAccessWifi){
-            permissions.add(android.Manifest.permission.ACCESS_WIFI_STATE)
-        }
-        if(!isChangeWifiGranted){
-            permissions.add(android.Manifest.permission.CHANGE_WIFI_STATE)
+        if (!isReadPhoneGranted){
+            permissions.add(android.Manifest.permission.READ_PHONE_STATE)
         }
 
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            if(!isNearWifiGranted){
-                permissions.add(android.Manifest.permission.NEARBY_WIFI_DEVICES)
+            if(!isReadPhoneNumberGranted){
+                permissions.add(android.Manifest.permission.READ_PHONE_NUMBERS)
             }
-        }
+
         permissionLauncher.launch(permissions.toTypedArray())
     }
 
+    Scaffold(topBar = { InFoAppBar(title = "Base Stations"){
+        navController.popBackStack()
+    } }) { contentPadding ->
+        Surface (modifier = Modifier.padding(contentPadding),
+            color = Color(0xFFD5C593)) {
 
+            }
+
+    }
 }
