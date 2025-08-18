@@ -73,6 +73,6 @@ dependencies {
     implementation("com.google.accompanist:accompanist-permissions:0.30.1")
 
     //Icons
-    implementation("androidx.compose.material:material-icons-extended:1.7.8")
+    //implementation("androidx.compose.material:material-icons-extended:1.7.8")
 
 }

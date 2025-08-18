@@ -48,7 +48,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.communicationinfo.widgets.InFoAppBar
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import androidx.compose.material.icons.filled.Wifi
 
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -129,7 +128,6 @@ fun WifiScreen(navController: NavController){
             }
         }
         permissionLauncher.launch(permissions.toTypedArray())
-        Log.d("dd", "${permissions}")
     }
 
 
@@ -226,7 +224,6 @@ fun WifiRow(result: ScanResult){
 
 }
 
-
 fun signalLevelToBars(dbm: Int): Int {
     return when {
         dbm >= -50 -> 4
@@ -244,7 +241,7 @@ fun SignalIcon(bars: Int) {
             Box(
                 modifier = Modifier
                     .width(4.dp)
-                    .height((i * 6).dp)
+                    .height((i * 4).dp)
                     .background(
                         color = if (i <= bars) Color.Green else Color.LightGray,
                         shape = RoundedCornerShape(1.dp)
@@ -266,8 +263,7 @@ fun Prev() {
         LazyColumn {
             items(listStr) { str ->
 
-                // Each item has its own expanded state
-
+            SignalIcon(3)
             }
         }
     }
