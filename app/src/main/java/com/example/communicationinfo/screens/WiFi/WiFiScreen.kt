@@ -25,6 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -42,6 +43,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -52,11 +54,14 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun WifiScreen(navController: NavController){
+fun WifiScreen(navController: NavController) {
 
 
-    var wifiList by remember { mutableStateOf<List<ScanResult>>(
-        emptyList()) }
+    var wifiList by remember {
+        mutableStateOf<List<ScanResult>>(
+            emptyList()
+        )
+    }
 
 
     val context = LocalContext.current
@@ -85,9 +90,10 @@ fun WifiScreen(navController: NavController){
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
-    ) {permissionsMap->
+    ) { permissionsMap ->
         isFineGranted = permissionsMap[android.Manifest.permission.ACCESS_FINE_LOCATION] ?: false
-        isCoarseGranted = permissionsMap[android.Manifest.permission.ACCESS_COARSE_LOCATION] ?: false
+        isCoarseGranted =
+            permissionsMap[android.Manifest.permission.ACCESS_COARSE_LOCATION] ?: false
         isAccessWifi = permissionsMap[android.Manifest.permission.ACCESS_WIFI_STATE] ?: false
         isChangeWifiGranted = permissionsMap[android.Manifest.permission.CHANGE_WIFI_STATE] ?: false
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
@@ -95,10 +101,10 @@ fun WifiScreen(navController: NavController){
                 permissionsMap[android.Manifest.permission.NEARBY_WIFI_DEVICES] ?: false
         }
 
-        if(permissionsMap.containsValue(false)){
+        if (permissionsMap.containsValue(false)) {
             Toast.makeText(context, "Permissions Denied", Toast.LENGTH_SHORT).show()
 
-        }else{
+        } else {
             Toast.makeText(context, "Permissions Granted", Toast.LENGTH_SHORT).show()
         }
 
@@ -109,21 +115,21 @@ fun WifiScreen(navController: NavController){
     LaunchedEffect(Unit) {
 
         val permissions = mutableListOf<String>()
-        if (!isFineGranted){
+        if (!isFineGranted) {
             permissions.add(android.Manifest.permission.ACCESS_FINE_LOCATION)
         }
-        if(!isCoarseGranted){
+        if (!isCoarseGranted) {
             permissions.add(android.Manifest.permission.ACCESS_COARSE_LOCATION)
         }
-        if (!isAccessWifi){
+        if (!isAccessWifi) {
             permissions.add(android.Manifest.permission.ACCESS_WIFI_STATE)
         }
-        if(!isChangeWifiGranted){
+        if (!isChangeWifiGranted) {
             permissions.add(android.Manifest.permission.CHANGE_WIFI_STATE)
         }
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            if(!isNearWifiGranted){
+            if (!isNearWifiGranted) {
                 permissions.add(android.Manifest.permission.NEARBY_WIFI_DEVICES)
             }
         }
@@ -131,28 +137,72 @@ fun WifiScreen(navController: NavController){
     }
 
 
-    Scaffold(topBar = { InFoAppBar(title = "Nearby Wi-Fi's"){
-        navController.popBackStack()
-    } }) { contentPadding ->
-        Surface (modifier = Modifier.padding(contentPadding),
-            color = Color(0xFFD5C593)) {
-                if(isAccessWifi && isNearWifiGranted &&isChangeWifiGranted
-                    && isFineGranted && isCoarseGranted) {
-                    val results = GetNearByWifi()
-                    LazyColumn (){
-                        items(results){result->
-                            WifiRow(result)
-                        }
-
+    Scaffold(topBar = {
+        InFoAppBar(title = "Nearby Wi-Fi's") {
+            navController.popBackStack()
+        }
+    }) { contentPadding ->
+        Surface(
+            modifier = Modifier.padding(contentPadding),
+            color = Color(0xFFD5C593)
+        ) {
+            if (isAccessWifi && isNearWifiGranted && isChangeWifiGranted
+                && isFineGranted && isCoarseGranted
+            ) {
+                val results = GetNearByWifi()
+                LazyColumn() {
+                    items(results) { result ->
+                        WifiRow(result)
                     }
 
                 }
+
+            } else {
+
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        "Permission Denied", style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 30.sp
+                    )
+                    val basePermissions = arrayOf(
+                        android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                        android.Manifest.permission.ACCESS_FINE_LOCATION,
+                        android.Manifest.permission.CHANGE_WIFI_STATE,
+                        android.Manifest.permission.ACCESS_WIFI_STATE
+                    )
+
+                    val permissions =
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                            basePermissions + android.Manifest.permission.NEARBY_WIFI_DEVICES
+                        } else {
+                            basePermissions
+                        }
+
+
+                    Spacer(modifier = Modifier.size(40.dp))
+                    Button(onClick = {
+                        permissionLauncher.launch(permissions)
+                    }) {
+                        Text(
+                            text = "Grant Permissions",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
         }
     }
 }
 
 @Composable
-fun WifiRow(result: ScanResult){
+fun WifiRow(result: ScanResult) {
 
     var expanded by remember {
         mutableStateOf(false)
@@ -163,7 +213,8 @@ fun WifiRow(result: ScanResult){
 
     Surface(
         modifier = Modifier
-            .padding(2.dp).fillMaxWidth(),
+            .padding(2.dp)
+            .fillMaxWidth(),
         color = Color(0xFF8ED5F6),
         shape = RoundedCornerShape(15.dp)
     ) {
@@ -177,14 +228,19 @@ fun WifiRow(result: ScanResult){
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Start
             ) {
-                Text("${result.wifiSsid}", modifier = Modifier.padding(start = 10.dp, top = 20.dp,),
+                Text(
+                    "${result.wifiSsid}", modifier = Modifier.padding(start = 10.dp, top = 20.dp),
                     style = MaterialTheme.typography.bodyMedium,
-                    fontSize = 15.sp)
+                    fontSize = 15.sp
+                )
                 Spacer(modifier = Modifier.size(width = 160.dp, height = 0.dp))
 
-                Text("Signal: ${result.level} dbm", modifier = Modifier.padding(start = 10.dp, top = 20.dp,),
+                Text(
+                    "Signal: ${result.level} dbm",
+                    modifier = Modifier.padding(start = 10.dp, top = 20.dp),
                     style = MaterialTheme.typography.bodyMedium,
-                    fontSize = 15.sp)
+                    fontSize = 15.sp
+                )
                 SignalIcon(bars)
                 //Icon(imageVector = Icons.Filled.Wifi, contentDescription = "wifi")
             }
@@ -192,18 +248,30 @@ fun WifiRow(result: ScanResult){
             AnimatedVisibility(visible = expanded) {
                 Column {
 
-                    Text("BSSID: ${result.BSSID}", modifier = Modifier.padding(start = 10.dp, top = 20.dp,),
+                    Text(
+                        "BSSID: ${result.BSSID}",
+                        modifier = Modifier.padding(start = 10.dp, top = 20.dp),
                         style = MaterialTheme.typography.bodyMedium,
-                        fontSize = 15.sp)
-                    Text("Freq: ${result.frequency}", modifier = Modifier.padding(start = 10.dp, top = 20.dp,),
+                        fontSize = 15.sp
+                    )
+                    Text(
+                        "Freq: ${result.frequency}",
+                        modifier = Modifier.padding(start = 10.dp, top = 20.dp),
                         style = MaterialTheme.typography.bodyMedium,
-                        fontSize = 15.sp)
-                    Text("Channel Width: ${result.channelWidth}", modifier = Modifier.padding(start = 10.dp, top = 20.dp,),
+                        fontSize = 15.sp
+                    )
+                    Text(
+                        "Channel Width: ${result.channelWidth}",
+                        modifier = Modifier.padding(start = 10.dp, top = 20.dp),
                         style = MaterialTheme.typography.bodyMedium,
-                        fontSize = 15.sp)
-                    Text("Capabilities: ${result.capabilities}", modifier = Modifier.padding(start = 10.dp, top = 20.dp,),
+                        fontSize = 15.sp
+                    )
+                    Text(
+                        "Capabilities: ${result.capabilities}",
+                        modifier = Modifier.padding(start = 10.dp, top = 20.dp),
                         style = MaterialTheme.typography.bodyMedium,
-                        fontSize = 15.sp)
+                        fontSize = 15.sp
+                    )
 //                    Text("Operator: ${result.}", modifier = Modifier.padding(start = 10.dp, top = 20.dp,),
 //                        style = MaterialTheme.typography.bodyMedium,
 //                        fontSize = 15.sp)
@@ -263,7 +331,7 @@ fun Prev() {
         LazyColumn {
             items(listStr) { str ->
 
-            SignalIcon(3)
+                SignalIcon(3)
             }
         }
     }
