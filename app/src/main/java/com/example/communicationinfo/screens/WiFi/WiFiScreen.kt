@@ -1,7 +1,6 @@
 package com.example.communicationinfo.screens.WiFi
 
 import android.net.wifi.ScanResult
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -40,8 +39,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.motionEventSpy
-import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -56,16 +53,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 @Composable
 fun WifiScreen(navController: NavController) {
 
-
-    var wifiList by remember {
-        mutableStateOf<List<ScanResult>>(
-            emptyList()
-        )
-    }
-
-
     val context = LocalContext.current
-
 
     var isFineGranted by remember {
         mutableStateOf(false)
