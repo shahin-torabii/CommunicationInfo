@@ -11,24 +11,25 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import java.util.concurrent.Flow
 
-
+@androidx.annotation.RequiresPermission(android.Manifest.permission.READ_PHONE_NUMBERS)
 @Composable
-fun GetBaseStations(): List< Pair<TelephonyManager, Int>>{
+fun GetBaseStations(): List< Triple<TelephonyManager, Int, String>>{
 
     val context = LocalContext.current
 
     val subscriptionManager = context.applicationContext.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
 
-    val activeSubscriptions :List<SubscriptionInfo> = subscriptionManager.activeSubscriptionInfoList()
+    val activeSubscriptions :List<SubscriptionInfo> = subscriptionManager.activeSubscriptionInfoList ?: emptyList()
 
     val telManagers = remember {
-        mutableListOf< Pair<TelephonyManager, Int>>()
+        mutableListOf< Triple<TelephonyManager, Int, String>>()
     }
 
     activeSubscriptions.forEach { subscription ->
         val telephonyManager = context.applicationContext.getSystemService(TelephonyManager::class.java)
             .createForSubscriptionId(subscription.subscriptionId)
-        telManagers.add(Pair(telephonyManager, subscription.simSlotIndex))
+        telManagers.add(Triple(telephonyManager, subscription.simSlotIndex
+        ,subscriptionManager.getPhoneNumber(subscription.subscriptionId)))
     }
     return  telManagers
 }

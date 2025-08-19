@@ -1,18 +1,31 @@
 package com.example.communicationinfo.screens.baseStation
 
+import android.os.Build
+import android.telephony.CellIdentityNr
+import android.telephony.CellInfoGsm
+import android.telephony.CellInfoLte
+import android.telephony.CellInfoNr
+import android.telephony.CellInfoWcdma
+import android.telephony.CellSignalStrength
+import android.telephony.CellSignalStrengthNr
+import android.telephony.SignalStrength
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -43,6 +56,7 @@ import com.example.communicationinfo.screens.WiFi.GetNearByWifi
 import com.example.communicationinfo.screens.WiFi.SignalIcon
 import com.example.communicationinfo.screens.WiFi.WifiRow
 import com.example.communicationinfo.widgets.InFoAppBar
+import kotlin.properties.Delegates
 
 
 @Composable
@@ -117,7 +131,8 @@ fun BaseStationScreen(navController: NavController) {
             if (permissionGrants) {
                 val telephonyManager = GetBaseStations()
                 val simOne = telephonyManager[0].first
-                val simOneSlot =  telephonyManager[0].second
+                val simOneSlot = telephonyManager[0].second
+                val simOneNmber = telephonyManager[0].third
                 val simTwoPair = telephonyManager.getOrNull(1)
                 val simTwo = simTwoPair?.first
                 val simTwoSlot = simTwoPair?.second
@@ -128,9 +143,29 @@ fun BaseStationScreen(navController: NavController) {
                     color = Color(0xFF8ED5F6),
                     shape = RoundedCornerShape(15.dp)
                 ) {
-                    val expanded by remember {
+                    var expanded by remember {
                         mutableStateOf(false)
                     }
+                    val simOperator = simOne.simOperator
+                    val networkOperator = simOne.networkOperator
+                    val simOperatorName = simOne.simOperatorName
+                    val networkOperatorName = simOne.networkOperatorName
+                    val countryIso = simOne.simCountryIso
+
+                    lateinit var signalStrength: CellSignalStrength
+                    var dbm by Delegates.notNull<Int>()
+                    var level by Delegates.notNull<Int>()
+
+
+                    val simOneCell = simOne.allCellInfo
+
+                    simOneCell?.forEach { info ->
+                    signalStrength = info.cellSignalStrength
+                        dbm = signalStrength.dbm        // Signal in dBm (negative, closer to 0 is better)
+                        level = signalStrength.level
+                    }
+
+
                     Column(
                         modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.Center,
@@ -141,31 +176,97 @@ fun BaseStationScreen(navController: NavController) {
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Start
                         ) {
-                               Text(simOne.allCellInfo.toString())
-                                Spacer(modifier = Modifier.size(width = 160.dp, height = 0.dp))
-                                Text(text = "${simOneSlot}")
+                            Column(
+                                modifier = Modifier.weight(1f), // take only needed space
+                                verticalArrangement = Arrangement.Center,
+                                horizontalAlignment = Alignment.Start
+                            ) {
+
+                                    Text(
+                                        "${simOperatorName}(${simOperator})",
+                                        modifier = Modifier.padding(start = 10.dp, top = 10.dp),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontSize = 15.sp
+                                    )
+                                Text(
+                                    "${simOneNmber}",
+                                    modifier = Modifier.padding(start = 10.dp, top = 5.dp),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontSize = 15.sp
+                                )
+                            }
+
+                            Text(
+                                "Signal strength:${dbm}",
+                                modifier = Modifier.padding(start = 5.dp, top = 5.dp),
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontSize = 15.sp
+                            )
+                            Spacer(modifier = Modifier.width(2.dp))
+                            SignalIcon(bars = level)
                         }
 
                         AnimatedVisibility(visible = expanded) {
-                            Column {
+                            simOneCell?.forEach { cell ->
+                                when (cell) {
+                                    is CellInfoGsm -> {
+                                        val id = cell.cellIdentity
+                                        InfoCard(
+                                            "GSM Cell",
+                                            mapOf(
+                                                "MCC" to id.mccString,
+                                                "MNC" to id.mncString,
+                                                "LAC" to id.lac,
+                                                "CID" to id.cid,
+                                                "ARFCN" to id.arfcn,
+                                            )
+                                        )
+                                    }
+                                    is CellInfoWcdma -> {
+                                        val id = cell.cellIdentity
+                                        InfoCard(
+                                            "WCDMA Cell",
+                                            mapOf(
+                                                "MCC" to id.mcc,
+                                                "MNC" to id.mnc,
+                                                "LAC" to id.lac,
+                                                "CID" to id.cid,
+                                                "UARFCN" to id.uarfcn,
+                                                "PSC" to id.psc,
+                                            )
+                                        )
+                                    }
+                                    is CellInfoLte -> {
+                                        val id = cell.cellIdentity
+                                        InfoCard(
+                                            "LTE Cell",
+                                            mapOf(
+                                                "MCC" to id.mccString,
+                                                "MNC" to id.mncString,
+                                                "TAC" to id.tac,
+                                                "CI" to id.ci,
+                                                "PCI" to id.pci,
+                                                "EARFCN" to id.earfcn,
+                                                "Bandwidth" to id.bandwidth,
+                                            )
+                                        )
+                                    }
+                                    is CellInfoNr -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                        val id = cell.cellIdentity as CellIdentityNr
+                                        InfoCard(
+                                            "5G NR Cell",
+                                            mapOf(
 
-                                Text(
-                                    "BSSID:",
-                                    modifier = Modifier.padding(start = 10.dp, top = 20.dp),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontSize = 15.sp
-                                )
-
-                                Text(
-                                    "Capabilities:",
-                                    modifier = Modifier.padding(start = 10.dp, top = 20.dp),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontSize = 15.sp
-                                )
-//                    Text("Operator: ${result.}", modifier = Modifier.padding(start = 10.dp, top = 20.dp,),
-//                        style = MaterialTheme.typography.bodyMedium,
-//                        fontSize = 15.sp)
-
+                                                "MCC" to id.mccString,
+                                                "MNC" to id.mncString,
+                                                "NCI" to id.nci,
+                                                "PCI" to id.pci,
+                                                "TAC" to id.tac,
+                                                "NRARFCN" to id.nrarfcn,
+                                            )
+                                        )
+                                    }
+                                }
                             }
                         }
 
@@ -177,9 +278,9 @@ fun BaseStationScreen(navController: NavController) {
                                 expanded = !expanded
                             }
                         )
+
                     }
                 }
-
 
             } else {
                 Column(
@@ -222,3 +323,45 @@ fun BaseStationScreen(navController: NavController) {
 
     }
 }
+
+@Composable
+fun InfoCard(title: String, features: Map<String, Any?>) {
+
+        Column(modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.Start
+            ) {
+            Text(
+                text = title,
+                modifier = Modifier.padding(start = 10.dp, top = 4.dp),
+                style = MaterialTheme.typography.titleMedium,
+                fontSize = 15.sp
+            )
+            features.forEach { (label, value) ->
+                Text(
+                    text = "$label: $value",
+                    modifier = Modifier.padding(start = 10.dp,top = 4.dp),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontSize = 15.sp
+                )
+            }
+    }
+}
+
+@Composable
+fun SignalIcon(bars: Int) {
+    Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+        for (i in 1..4) {
+            Box(
+                modifier = Modifier
+                    .width(4.dp)
+                    .height((i * 4).dp)
+                    .background(
+                        color = if (i <= bars) Color.Green else Color.LightGray,
+                        shape = RoundedCornerShape(1.dp)
+                    )
+            )
+        }
+    }
+}
+
+
