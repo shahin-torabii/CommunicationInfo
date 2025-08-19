@@ -133,9 +133,13 @@ fun BaseStationScreen(navController: NavController) {
                 val simOne = telephonyManager[0].first
                 val simOneSlot = telephonyManager[0].second
                 val simOneNmber = telephonyManager[0].third
-                val simTwoPair = telephonyManager.getOrNull(1)
-                val simTwo = simTwoPair?.first
-                val simTwoSlot = simTwoPair?.second
+                Column( // 👈 wrap both in a Column
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .fillMaxSize(),
+                    verticalArrangement = Arrangement.Top,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
                 Surface(
                     modifier = Modifier
                         .padding(2.dp)
@@ -196,6 +200,13 @@ fun BaseStationScreen(navController: NavController) {
                                 )
                             }
 
+                            Text(
+                                "Slot:${simOneSlot}",
+                                modifier = Modifier.padding(start = 5.dp, top = 5.dp),
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontSize = 15.sp
+                            )
+                            Spacer(modifier = Modifier.width(2.dp))
                             Text(
                                 "Signal strength:${dbm}",
                                 modifier = Modifier.padding(start = 5.dp, top = 5.dp),
@@ -281,7 +292,173 @@ fun BaseStationScreen(navController: NavController) {
 
                     }
                 }
+                val simTwoPair = telephonyManager.getOrNull(1)
+                val simTwo = simTwoPair?.first
+                val simTwoSlot = simTwoPair?.second
+                val simTwoNumber = simTwoPair?.third
+                if(simTwo == null) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("No sim card Found")
+                    }
+                }else{
+                    Surface(
+                        modifier = Modifier
+                            .padding(2.dp)
+                            .fillMaxWidth(),
+                        color = Color(0xFF8ED5F6),
+                        shape = RoundedCornerShape(15.dp)
+                    ) {
+                        var expanded by remember {
+                            mutableStateOf(false)
+                        }
+                        val simOperator = simTwo.simOperator
+                        val networkOperator = simTwo.networkOperator
+                        val simOperatorName = simTwo.simOperatorName
+                        val networkOperatorName = simTwo.networkOperatorName
+                        val countryIso = simTwo.simCountryIso
 
+                        lateinit var signalStrength: CellSignalStrength
+                        var dbm by Delegates.notNull<Int>()
+                        var level by Delegates.notNull<Int>()
+
+
+                        val simTwoCell = simTwo.allCellInfo
+
+                        simTwoCell?.forEach { info ->
+                            signalStrength = info.cellSignalStrength
+                            dbm = signalStrength.dbm        // Signal in dBm (negative, closer to 0 is better)
+                            level = signalStrength.level
+                        }
+
+
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Start
+                            ) {
+                                Column(
+                                    modifier = Modifier.weight(1f), // take only needed space
+                                    verticalArrangement = Arrangement.Center,
+                                    horizontalAlignment = Alignment.Start
+                                ) {
+
+                                    Text(
+                                        "${simOperatorName}(${simOperator})",
+                                        modifier = Modifier.padding(start = 10.dp, top = 10.dp),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontSize = 15.sp
+                                    )
+                                    Text(
+                                        "${simTwoNumber}",
+                                        modifier = Modifier.padding(start = 10.dp, top = 5.dp),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontSize = 15.sp
+                                    )
+                                }
+
+                                Text(
+                                    "Slot:${simTwoSlot}",
+                                    modifier = Modifier.padding(start = 5.dp, top = 5.dp),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontSize = 15.sp
+                                )
+                                Spacer(modifier = Modifier.width(2.dp))
+                                Text(
+                                    "Signal strength:${dbm}",
+                                    modifier = Modifier.padding(start = 5.dp, top = 5.dp),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontSize = 15.sp
+                                )
+                                Spacer(modifier = Modifier.width(2.dp))
+                                SignalIcon(bars = level)
+                            }
+
+                            AnimatedVisibility(visible = expanded) {
+                                simTwoCell?.forEach { cell ->
+                                    when (cell) {
+                                        is CellInfoGsm -> {
+                                            val id = cell.cellIdentity
+                                            InfoCard(
+                                                "GSM Cell",
+                                                mapOf(
+                                                    "MCC" to id.mccString,
+                                                    "MNC" to id.mncString,
+                                                    "LAC" to id.lac,
+                                                    "CID" to id.cid,
+                                                    "ARFCN" to id.arfcn,
+                                                )
+                                            )
+                                        }
+                                        is CellInfoWcdma -> {
+                                            val id = cell.cellIdentity
+                                            InfoCard(
+                                                "WCDMA Cell",
+                                                mapOf(
+                                                    "MCC" to id.mcc,
+                                                    "MNC" to id.mnc,
+                                                    "LAC" to id.lac,
+                                                    "CID" to id.cid,
+                                                    "UARFCN" to id.uarfcn,
+                                                    "PSC" to id.psc,
+                                                )
+                                            )
+                                        }
+                                        is CellInfoLte -> {
+                                            val id = cell.cellIdentity
+                                            InfoCard(
+                                                "LTE Cell",
+                                                mapOf(
+                                                    "MCC" to id.mccString,
+                                                    "MNC" to id.mncString,
+                                                    "TAC" to id.tac,
+                                                    "CI" to id.ci,
+                                                    "PCI" to id.pci,
+                                                    "EARFCN" to id.earfcn,
+                                                    "Bandwidth" to id.bandwidth,
+                                                )
+                                            )
+                                        }
+                                        is CellInfoNr -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                            val id = cell.cellIdentity as CellIdentityNr
+                                            InfoCard(
+                                                "5G NR Cell",
+                                                mapOf(
+
+                                                    "MCC" to id.mccString,
+                                                    "MNC" to id.mncString,
+                                                    "NCI" to id.nci,
+                                                    "PCI" to id.pci,
+                                                    "TAC" to id.tac,
+                                                    "NRARFCN" to id.nrarfcn,
+                                                )
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            Icon(
+                                imageVector = if (!expanded) Icons.Default.KeyboardArrowDown
+                                else Icons.Default.KeyboardArrowUp,
+                                contentDescription = "arrow up",
+                                modifier = Modifier.clickable {
+                                    expanded = !expanded
+                                }
+                            )
+
+                        }
+                    }
+                }
+                }
             } else {
                 Column(
                     modifier = Modifier.fillMaxSize(),
