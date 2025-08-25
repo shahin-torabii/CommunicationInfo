@@ -13,23 +13,31 @@ import java.util.concurrent.Flow
 
 @androidx.annotation.RequiresPermission(android.Manifest.permission.READ_PHONE_NUMBERS)
 @Composable
-fun GetBaseStations(): List< Triple<TelephonyManager, Int, String>>{
-
+fun GetBaseStations(): List<Triple<TelephonyManager, Int, String>> {
     val context = LocalContext.current
+    val subscriptionManager =
+        context.applicationContext.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
 
-    val subscriptionManager = context.applicationContext.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
-
-    val activeSubscriptions :List<SubscriptionInfo> = subscriptionManager.activeSubscriptionInfoList ?: emptyList()
+    val activeSubscriptions: List<SubscriptionInfo> =
+        subscriptionManager.activeSubscriptionInfoList ?: emptyList()
 
     val telManagers = remember {
-        mutableListOf< Triple<TelephonyManager, Int, String>>()
+        mutableListOf<Triple<TelephonyManager, Int, String>>()
     }
 
     activeSubscriptions.forEach { subscription ->
-        val telephonyManager = context.applicationContext.getSystemService(TelephonyManager::class.java)
+        val telephonyManager = context.applicationContext
+            .getSystemService(TelephonyManager::class.java)
             .createForSubscriptionId(subscription.subscriptionId)
-        telManagers.add(Triple(telephonyManager, subscription.simSlotIndex
-        ,subscriptionManager.getPhoneNumber(subscription.subscriptionId)))
+
+        // Add number + subscriptionId
+        telManagers.add(
+            Triple(
+                telephonyManager,
+                subscription.simSlotIndex,
+                subscriptionManager.getPhoneNumber(subscription.subscriptionId)
+            )
+        )
     }
-    return  telManagers
+    return telManagers
 }
